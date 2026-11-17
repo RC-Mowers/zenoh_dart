@@ -102,12 +102,20 @@ else()
   # the header tier and the library tier below key off this: they must resolve
   # to the same variant or the shim compiles against one ABI and links another.
   # (Ignored on Android, which has its own per-ABI tiers.)
-  if(ZENOH_DART_VARIANT STREQUAL "unstable")
-    set(_full_build_dir "build/linux-x64")
-    set(_full_build_preset "linux-x64")
+  # The preset family follows the host: linux-arm64* on aarch64, linux-x64*
+  # otherwise. Naming linux-x64 unconditionally sent an arm64 shim-only build
+  # to an x64 build tree that never exists there.
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set(_zd_linux_preset "linux-arm64")
   else()
-    set(_full_build_dir "build/linux-x64-stable")
-    set(_full_build_preset "linux-x64-stable")
+    set(_zd_linux_preset "linux-x64")
+  endif()
+  if(ZENOH_DART_VARIANT STREQUAL "unstable")
+    set(_full_build_dir "build/${_zd_linux_preset}")
+    set(_full_build_preset "${_zd_linux_preset}")
+  else()
+    set(_full_build_dir "build/${_zd_linux_preset}-stable")
+    set(_full_build_preset "${_zd_linux_preset}-stable")
   endif()
 
   if(ANDROID)

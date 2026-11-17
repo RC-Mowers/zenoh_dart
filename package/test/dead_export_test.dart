@@ -21,6 +21,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 import 'helpers/changelog_section.dart';
+import 'helpers/host_paths.dart';
 
 /// The symbols this slice removes.
 const prunedSymbols = <String>[
@@ -115,7 +116,7 @@ Set<String> shippedSymbols(String variant) {
   final r = Process.runSync('nm', [
     '-D',
     '--defined-only',
-    'native/linux/x86_64/$variant/libzenoh_dart.so',
+    'native/linux/$hostNativeArch/$variant/libzenoh_dart.so',
   ]);
   expect(r.exitCode, 0, reason: 'nm failed: ${r.stderr}');
   return (r.stdout as String)

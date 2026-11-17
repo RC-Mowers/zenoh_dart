@@ -29,7 +29,7 @@
 # test/interop/, neither of which the default suite runs.
 #
 # `ZENOH_DART_VARIANT` moves the load off `package/.dart_tool/lib/` (the copy
-# the toolchain rewrites) and onto `package/native/linux/x86_64/<variant>/`
+# the toolchain rewrites) and onto `package/native/linux/<uname -m>/<variant>/`
 # (which nothing rewrites during a run). The toolchain still re-stages its copy;
 # nobody has it mapped any more.
 #
@@ -101,7 +101,15 @@ if [ -n "${ZENOH_DART_VARIANT:-}" ] && [ "$ZENOH_DART_VARIANT" != "$declared" ];
   exit 1
 fi
 
-NATIVE_DIR="$REPO_ROOT/package/native/linux/x86_64/$declared"
+# The host's native directory and preset family: aarch64 builds install to
+# native/linux/aarch64/ from the linux-arm64* presets, x86_64 to
+# native/linux/x86_64/ from linux-x64*. This used to name x86_64 alone.
+case "$(uname -m)" in
+  x86_64)  ARCH_DIR=x86_64;  PRESET=linux-x64 ;;
+  aarch64) ARCH_DIR=aarch64; PRESET=linux-arm64 ;;
+  *) echo "REFUSING: the suite runs on x86_64 or aarch64 Linux, not $(uname -m)." >&2; exit 1 ;;
+esac
+NATIVE_DIR="$REPO_ROOT/package/native/linux/$ARCH_DIR/$declared"
 for lib in libzenoh_dart.so libzenohc.so; do
   if [ ! -f "$NATIVE_DIR/$lib" ]; then
     echo "REFUSING: $NATIVE_DIR/$lib is missing." >&2
@@ -110,11 +118,11 @@ for lib in libzenoh_dart.so libzenohc.so; do
     echo "Build this variant before running the suite:" >&2
     echo >&2
     if [ "$declared" = "stable" ]; then
-      echo "  cmake --preset linux-x64-stable" >&2
-      echo "  cmake --build --preset linux-x64-stable --target install" >&2
+      echo "  cmake --preset $PRESET-stable" >&2
+      echo "  cmake --build --preset $PRESET-stable --target install" >&2
     else
-      echo "  cmake --preset linux-x64" >&2
-      echo "  cmake --build --preset linux-x64 --target install" >&2
+      echo "  cmake --preset $PRESET" >&2
+      echo "  cmake --build --preset $PRESET --target install" >&2
     fi
     exit 1
   fi

@@ -26,9 +26,9 @@
 // BUILD -- the include path is not the obvious one, and is VARIANT-SCOPED:
 //
 //   cd package && clang -O0 -g test/helpers/encoding_constants_oracle.c \
-//     -I ../build/linux-x64/extern/zenoh-c/release/include \
-//     -L native/linux/x86_64/unstable -lzenohc \
-//     -Wl,-rpath,$PWD/native/linux/x86_64/unstable -o <out>/oracle
+//     -I ../build/linux-<x64|arm64>/extern/zenoh-c/release/include \
+//     -L native/linux/$(uname -m)/unstable -lzenohc \
+//     -Wl,-rpath,$PWD/native/linux/$(uname -m)/unstable -o <out>/oracle
 //
 // `helpers/canon_peer.dart` picks the pair for the loaded variant, which is
 // what lets this run on both matrix legs. The headers MUST come from the BUILD

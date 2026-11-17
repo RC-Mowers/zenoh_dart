@@ -25,9 +25,9 @@
 // BOTH the includes and the library are VARIANT-scoped:
 //
 //   cd package && clang -O0 -g test/helpers/encoding_peer.c \
-//     -I ../build/linux-x64<-stable>/extern/zenoh-c/release/include \
-//     -L native/linux/x86_64/<variant> -lzenohc \
-//     -Wl,-rpath,$PWD/native/linux/x86_64/<variant> -o <out>/encoding_peer
+//     -I ../build/linux-<x64|arm64><-stable>/extern/zenoh-c/release/include \
+//     -L native/linux/$(uname -m)/<variant> -lzenohc \
+//     -Wl,-rpath,$PWD/native/linux/$(uname -m)/<variant> -o <out>/encoding_peer
 //
 // The headers MUST come from the BUILD tree, never from `extern/zenoh-c/include`.
 // `zenoh_opaque.h` and `zenoh_configure.h` are cargo-GENERATED files that the

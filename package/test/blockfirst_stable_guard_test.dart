@@ -32,6 +32,7 @@ import 'package:test/test.dart';
 import 'package:zenoh_dart/src/congestion_control.dart';
 
 import 'helpers/changelog_section.dart';
+import 'helpers/host_paths.dart';
 
 /// What one probe run produced, INCLUDING whether it ended on its own.
 class ProbeRun {
@@ -212,7 +213,7 @@ void main() {
               'FAILURE, not a skip: the instrument was blind, it did not sit '
               'out.\n$output';
         } else if (!'${armed['libraryPath']}'.contains(
-          'native/linux/x86_64/stable/',
+          'native/linux/$hostNativeArch/stable/',
         )) {
           armingFailure =
               'the probe reported the unstable API absent but '
@@ -287,7 +288,7 @@ void main() {
         expect(armed['unstableApi'], isFalse);
         expect(
           '${armed['libraryPath']}',
-          contains('native/linux/x86_64/stable/'),
+          contains('native/linux/$hostNativeArch/stable/'),
         );
       });
 

@@ -29,6 +29,8 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
+import 'helpers/host_paths.dart';
+
 /// PASS 1, THE PRIMARY INSTRUMENT — every test that reads a file, and what it
 /// reads.
 ///
@@ -162,7 +164,7 @@ Set<String> zdSymbols(String variant) {
   final result = Process.runSync('nm', [
     '-D',
     '--defined-only',
-    'native/linux/x86_64/$variant/libzenoh_dart.so',
+    'native/linux/$hostNativeArch/$variant/libzenoh_dart.so',
   ]);
   expect(result.exitCode, 0, reason: 'nm failed: ${result.stderr}');
   return (result.stdout as String)

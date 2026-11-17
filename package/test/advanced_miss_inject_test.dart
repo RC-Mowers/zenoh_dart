@@ -21,6 +21,7 @@ import 'package:test/test.dart';
 import 'package:zenoh_dart/zenoh_unstable.dart';
 
 import 'helpers/cli_process.dart';
+import 'helpers/host_paths.dart';
 
 /// Where the ABI-correct generated headers live, relative to `package/`.
 ///
@@ -31,9 +32,9 @@ import 'helpers/cli_process.dart';
 /// 248 — nine bytes out of bounds, with rc 0 throughout and correct-looking
 /// output. `src/CMakeLists.txt` enforces the same rule for the shim and states
 /// the reason there.
-const buildTreeIncludes = '../build/linux-x64/extern/zenoh-c/release/include';
+final String buildTreeIncludes = buildTreeIncludeDir(stable: false);
 
-const unstableLibDir = 'native/linux/x86_64/unstable';
+final String unstableLibDir = nativeLibDir('unstable');
 
 /// Compiles [source] to [output]; returns clang's own [ProcessResult].
 Future<ProcessResult> compileAgainstZenoh(String source, String output) {
@@ -96,7 +97,7 @@ void main() {
     'AdvancedSubscriber miss injection (TCP 19413)',
     // ⚠️ GATE ORDER IS LOAD-BEARING. This group gate ENCLOSES the setUpAll
     // compile, and it must: the injector links against
-    // native/linux/x86_64/unstable, whose advanced symbols do not exist under
+    // native/linux/<arch>/unstable, whose advanced symbols do not exist under
     // the stable variant and whose libzenohc.so is a different build. So on
     // the stable matrix leg the whole group is skipped by the established
     // gate — a designed skip — and INSIDE the unstable leg nothing skips at
@@ -118,7 +119,7 @@ void main() {
           fail(
             'the ABI-correct generated headers are missing at '
             '$buildTreeIncludes.\n'
-            'Build them first: cmake --preset linux-x64 (or its shim-only '
+            'Build them first: cmake --preset $hostPreset (or its shim-only '
             'sibling) from the repo root. The source-tree copies under '
             'extern/zenoh-c/include are NOT a substitute — they are '
             'cargo-generated, ABI-mismatched, and compiling against them '

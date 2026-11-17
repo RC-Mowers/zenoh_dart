@@ -20,6 +20,8 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:zenoh_dart/src/log_severity.dart';
 
+import 'helpers/host_paths.dart';
+
 /// A source file with its comment markers and line wrapping flattened away.
 ///
 /// See `open_detail_secrets_test.dart` for why: a `contains` against raw
@@ -225,7 +227,7 @@ void main() {
       // copy of it: an embedded copy checked against the code's copy is
       // self-agreement.
       final header = File(
-        '../build/linux-x64/extern/zenoh-c/release/include/zenoh_commons.h',
+        '${buildTreeIncludeDir(stable: false)}/zenoh_commons.h',
       ).readAsStringSync();
       for (final severity in LogSeverity.values) {
         final macro = 'ZC_LOG_SEVERITY_${severity.name.toUpperCase()}';

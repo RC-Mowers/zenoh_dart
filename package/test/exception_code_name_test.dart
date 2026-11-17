@@ -25,6 +25,8 @@ import 'package:test/test.dart';
 import 'package:zenoh_dart/src/exceptions.dart';
 import 'package:zenoh_dart/src/session.dart';
 
+import 'helpers/host_paths.dart';
+
 /// See `open_detail_secrets_test.dart` for why prose is read flattened.
 /// ⚠️ LOWERCASED, and needles must be lowercase too.
 String flattenedProse(String path) =>
@@ -46,8 +48,7 @@ String flattenedProse(String path) =>
 /// The instrument, named beside the number it produces:
 /// `awk '/^#define Z_E/ {print $2, $3}' <build-generated zenoh_concrete.h>`
 List<({String name, int value})> canonErrorTable() {
-  const header =
-      '../build/linux-x64/extern/zenoh-c/release/include/zenoh_concrete.h';
+  final header = '${buildTreeIncludeDir(stable: false)}/zenoh_concrete.h';
   final table = <({String name, int value})>[];
   for (final line in File(header).readAsLinesSync()) {
     if (!line.startsWith('#define Z_E')) continue;

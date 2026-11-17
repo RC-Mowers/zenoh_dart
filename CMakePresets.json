@@ -3,7 +3,7 @@
   "configurePresets": [
     {
       "name": "linux-x64",
-      "displayName": "Linux x86_64 — full build (zenoh-c from source + C shim)",
+      "displayName": "Linux x86_64 \u2014 full build (zenoh-c from source + C shim)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/linux-x64",
       "cacheVariables": {
@@ -16,7 +16,7 @@
     },
     {
       "name": "linux-x64-shim-only",
-      "displayName": "Linux x86_64 — C shim only (prebuilt zenoh-c)",
+      "displayName": "Linux x86_64 \u2014 C shim only (prebuilt zenoh-c)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/linux-x64-shim",
       "cacheVariables": {
@@ -28,7 +28,7 @@
     },
     {
       "name": "linux-x64-stable",
-      "displayName": "Linux x86_64 — full build, STABLE variant (no SHM/unstable)",
+      "displayName": "Linux x86_64 \u2014 full build, STABLE variant (no SHM/unstable)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/linux-x64-stable",
       "cacheVariables": {
@@ -41,7 +41,7 @@
     },
     {
       "name": "linux-x64-stable-shim-only",
-      "displayName": "Linux x86_64 — C shim only, STABLE variant (prebuilt zenoh-c)",
+      "displayName": "Linux x86_64 \u2014 C shim only, STABLE variant (prebuilt zenoh-c)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/linux-x64-stable-shim",
       "cacheVariables": {
@@ -52,8 +52,58 @@
       }
     },
     {
+      "name": "linux-arm64",
+      "displayName": "Linux arm64 (aarch64) \u2014 full build (zenoh-c from source + C shim)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-arm64",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ZENOH_DART_BUILD_ZENOHC": "TRUE",
+        "ZENOH_DART_VARIANT": "unstable"
+      }
+    },
+    {
+      "name": "linux-arm64-shim-only",
+      "displayName": "Linux arm64 (aarch64) \u2014 C shim only (prebuilt zenoh-c)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-arm64-shim",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ZENOH_DART_BUILD_ZENOHC": "FALSE",
+        "ZENOH_DART_VARIANT": "unstable"
+      }
+    },
+    {
+      "name": "linux-arm64-stable",
+      "displayName": "Linux arm64 (aarch64) \u2014 full build, STABLE variant (no SHM/unstable)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-arm64-stable",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ZENOH_DART_BUILD_ZENOHC": "TRUE",
+        "ZENOH_DART_VARIANT": "stable"
+      }
+    },
+    {
+      "name": "linux-arm64-stable-shim-only",
+      "displayName": "Linux arm64 (aarch64) \u2014 C shim only, STABLE variant (prebuilt zenoh-c)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-arm64-stable-shim",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ZENOH_DART_BUILD_ZENOHC": "FALSE",
+        "ZENOH_DART_VARIANT": "stable"
+      }
+    },
+    {
       "name": "android-arm64",
-      "displayName": "Android arm64-v8a — C shim only (zenoh-c via cargo-ndk)",
+      "displayName": "Android arm64-v8a \u2014 C shim only (zenoh-c via cargo-ndk)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/android/arm64-v8a",
       "toolchainFile": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake",
@@ -65,7 +115,7 @@
     },
     {
       "name": "android-x86_64",
-      "displayName": "Android x86_64 — C shim only (zenoh-c via cargo-ndk)",
+      "displayName": "Android x86_64 \u2014 C shim only (zenoh-c via cargo-ndk)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/android/x86_64",
       "toolchainFile": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake",
@@ -94,6 +144,24 @@
     {
       "name": "linux-x64-stable-shim-only",
       "configurePreset": "linux-x64-stable-shim-only"
+    },
+    {
+      "name": "linux-arm64",
+      "configurePreset": "linux-arm64",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-arm64-shim-only",
+      "configurePreset": "linux-arm64-shim-only"
+    },
+    {
+      "name": "linux-arm64-stable",
+      "configurePreset": "linux-arm64-stable",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-arm64-stable-shim-only",
+      "configurePreset": "linux-arm64-stable-shim-only"
     },
     {
       "name": "android-arm64",

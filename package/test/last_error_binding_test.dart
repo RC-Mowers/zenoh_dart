@@ -28,6 +28,7 @@ import 'package:zenoh_dart/src/exceptions.dart';
 import 'package:zenoh_dart/src/session.dart';
 import 'package:zenoh_dart/src/unstable/features.dart';
 
+import 'helpers/host_paths.dart';
 import 'helpers/last_error_interleave_harness.dart';
 
 /// The three identifiers the deleted mechanism was made of.
@@ -45,7 +46,7 @@ const _deletedIdentifiers = <String>[
 const _variants = <String>['unstable', 'stable'];
 
 String _nativePath(String variant) =>
-    'native/linux/x86_64/$variant/libzenoh_dart.so';
+    'native/linux/$hostNativeArch/$variant/libzenoh_dart.so';
 
 /// Every `zd_`-prefixed dynamic symbol defined by [variant]'s native.
 Set<String> _dynamicZdSymbols(String variant) {

@@ -22,9 +22,9 @@
 // BUILD — note the include path, which is not the obvious one:
 //
 //   cd package && clang -O0 -g test/helpers/miss_injector.c \
-//     -I ../build/linux-x64/extern/zenoh-c/release/include \
-//     -L native/linux/x86_64/unstable -lzenohc \
-//     -Wl,-rpath,$PWD/native/linux/x86_64/unstable -o <out>/miss_injector
+//     -I ../build/linux-<x64|arm64>/extern/zenoh-c/release/include \
+//     -L native/linux/$(uname -m)/unstable -lzenohc \
+//     -Wl,-rpath,$PWD/native/linux/$(uname -m)/unstable -o <out>/miss_injector
 //
 // The headers MUST come from the BUILD tree, never from `extern/zenoh-c/include`.
 // `zenoh_opaque.h` and `zenoh_configure.h` are cargo-GENERATED files that the

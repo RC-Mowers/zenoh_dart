@@ -700,7 +700,7 @@ void _variantOverrideGroup() {
     );
 
     test('a valid but unbuilt variant throws rather than falling through', () async {
-      // Nothing is staged under native/linux/x86_64/<v>/ for a variant that
+      // Nothing is staged under native/linux/<arch>/<v>/ for a variant that
       // was never built, so the request cannot be honoured. Falling through to
       // the hook output would silently hand back the other variant.
       final tmp = await Directory.systemTemp.createTemp('zd_variant');

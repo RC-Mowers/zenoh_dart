@@ -483,7 +483,7 @@ Future<void> main() async {
   });
 
   // Canon enumerates z_what_t as exactly {1,2,3,4,5,6,7} --
-  // build/linux-x64/extern/zenoh-c/release/include/zenoh_commons.h:246-254.
+  // build/<preset>/extern/zenoh-c/release/include/zenoh_commons.h:246-254.
   // Before the guard, `what` crossed into zd_scout unchecked, so 0, 8 and
   // every negative reached the native call as a raw bit pattern.
   group('Zenoh scout what-mask domain guard', () {

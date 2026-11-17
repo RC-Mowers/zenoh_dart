@@ -8,8 +8,8 @@
 //
 // Two things are variant-scoped and both matter:
 //
-//   * the INCLUDE directory — `linux-x64` defines Z_FEATURE_UNSTABLE_API and
-//     Z_FEATURE_SHARED_MEMORY, `linux-x64-stable` does not, and those macros
+//   * the INCLUDE directory — `<preset>` defines Z_FEATURE_UNSTABLE_API and
+//     Z_FEATURE_SHARED_MEMORY, `<preset>-stable` does not, and those macros
 //     change the layout of every canon options struct with a guarded member;
 //   * the LIBRARY directory — the two `libzenohc.so` builds are different
 //     binaries.
@@ -25,6 +25,7 @@ import 'package:test/test.dart';
 import 'package:zenoh_dart/zenoh_unstable.dart';
 
 import 'cli_process.dart';
+import 'host_paths.dart';
 
 /// Whether the loaded native is the `unstable` variant.
 ///
@@ -39,21 +40,18 @@ bool get _isUnstableVariant => ZenohFeatures.hasUnstableApi;
 /// NOT `../extern/zenoh-c/include`. Those copies of `zenoh_opaque.h` and
 /// `zenoh_configure.h` are cargo-generated, excluded by the submodule's own
 /// .gitignore, and clobbered by every full build.
-String get canonIncludeDir => _isUnstableVariant
-    ? '../build/linux-x64/extern/zenoh-c/release/include'
-    : '../build/linux-x64-stable/extern/zenoh-c/release/include';
+String get canonIncludeDir => buildTreeIncludeDir(stable: !_isUnstableVariant);
 
 /// Where the variant's `libzenohc.so` lives, relative to `package/`.
-String get canonLibDir => _isUnstableVariant
-    ? 'native/linux/x86_64/unstable'
-    : 'native/linux/x86_64/stable';
+String get canonLibDir =>
+    nativeLibDir(_isUnstableVariant ? 'unstable' : 'stable');
 
 /// The build recipe quoted back to whoever hits the missing-headers case.
 String get _buildRecipe =>
     'Build them first, from the repo root:\n'
-    '  cmake --preset ${_isUnstableVariant ? 'linux-x64' : 'linux-x64-stable'}'
+    '  cmake --preset ${_isUnstableVariant ? hostPreset : '$hostPreset-stable'}'
     ' && cmake --build --preset '
-    '${_isUnstableVariant ? 'linux-x64' : 'linux-x64-stable'} '
+    '${_isUnstableVariant ? hostPreset : '$hostPreset-stable'} '
     '--target install\n'
     '(or the matching `-shim-only` pair when zenoh-c is already built).\n'
     'The source-tree copies under extern/zenoh-c/include are NOT a '

@@ -35,6 +35,8 @@ import 'package:test/test.dart';
 import 'package:zenoh_dart/src/native_lib.dart';
 import 'package:zenoh_dart/zenoh_unstable.dart';
 
+import 'helpers/host_paths.dart';
+
 /// This file's own path, package-relative. The suite runs with `package/` as
 /// its working directory (`scripts/test.sh` cd's there), and one cell reads
 /// this source back to check that no host number was written into it.
@@ -195,7 +197,7 @@ int? _overLockedMemoryBudget() {
 }
 
 String _nativePath(String variant) =>
-    'native/linux/x86_64/$variant/libzenoh_dart.so';
+    'native/linux/$hostNativeArch/$variant/libzenoh_dart.so';
 
 /// Every `zd_`-prefixed dynamic symbol defined by [variant]'s native.
 ///

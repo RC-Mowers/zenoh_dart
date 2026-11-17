@@ -8,6 +8,8 @@ import 'package:zenoh_dart/src/native_lib.dart';
 import 'package:zenoh_dart/src/unstable/features.dart';
 import 'package:zenoh_dart/zenoh.dart';
 
+import 'helpers/host_paths.dart';
+
 void main() {
   group('ensureInitialized with DynamicLibrary.open', () {
     test('completes without error', () {
@@ -45,7 +47,7 @@ void main() {
   // This group used to be skipped whenever `ZenohFeatures.hasSharedMemory` was
   // false -- that is, on exactly the variant whose behaviour the group's own
   // comment called "the discriminating OFF-case". The skip reason waited on
-  // variant builds that now exist (native/linux/x86_64/{stable,unstable}/), so
+  // variant builds that now exist (native/linux/<arch>/{stable,unstable}/), so
   // the gate is gone and both directions are asserted.
   //
   // The repair is not just "drop the skip", because branching the assertion on
@@ -128,7 +130,7 @@ void main() {
 
   // The suite's own load-path guard.
   //
-  // The suite runs off `native/linux/x86_64/<variant>/`, not off the build
+  // The suite runs off `native/linux/<arch>/<variant>/`, not off the build
   // hook's staged copy in `.dart_tool/lib/`, and `scripts/test.sh` is what
   // arranges that by exporting ZENOH_DART_VARIANT. The reason is a toolchain
   // defect, not a preference: `dart run`/`dart test` re-stage the bundled
@@ -217,7 +219,7 @@ void main() {
       );
       expect(
         resolvedLibraryPath,
-        contains('/native/linux/x86_64/$declared/'),
+        contains('/native/linux/$hostNativeArch/$declared/'),
         reason: 'the loader did not land in the declared variant directory',
       );
     });
@@ -237,7 +239,7 @@ void main() {
       expect(out, contains('LOADED='), reason: 'harness output: $out');
       expect(
         out,
-        contains('/native/linux/x86_64/$declared/'),
+        contains('/native/linux/$hostNativeArch/$declared/'),
         reason: 'a child loaded from somewhere else: $out',
       );
     }, timeout: const Timeout(Duration(minutes: 2)));
@@ -316,8 +318,9 @@ void main() {
       // file was expected to be. The two commonest causes -- a build for
       // another architecture, and a truncated or half-written file -- are
       // indistinguishable from the VM's message alone.
-      final fakeVariant = Directory('${tmp.path}/native/linux/x86_64/bogus')
-        ..createSync(recursive: true);
+      final fakeVariant = Directory(
+        '${tmp.path}/native/linux/$hostNativeArch/bogus',
+      )..createSync(recursive: true);
       File('${fakeVariant.path}/libzenoh_dart.so')
           .writeAsStringSync('not an ELF shared object at all');
 

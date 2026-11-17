@@ -5,6 +5,7 @@ import 'package:hooks/hooks.dart';
 import 'package:test/test.dart';
 
 import '../hook/build.dart' as hook;
+import 'helpers/host_paths.dart';
 
 /// Whether two files hold byte-identical content.
 ///
@@ -24,7 +25,7 @@ bool _sameContent(File a, File b) {
 /// declaration), driven in isolation via `testBuildHook`.
 ///
 /// Passes `variant: unstable` explicitly, so it reads the on-disk
-/// native/linux/x86_64/unstable/ prebuilts regardless of the pubspec's own
+/// `native/linux/<arch>/unstable/` prebuilts regardless of the pubspec's own
 /// variant — i.e. it is correct under both halves of the 2x matrix.
 void main() {
   test(
@@ -51,7 +52,7 @@ void main() {
           //
           // Existence is not identity. A green build proves a file arrived,
           // never *which* variant arrived — and a legacy top-level
-          // native/linux/x86_64/*.so exists in this tree, so "some .so is
+          // native/linux/<arch>/*.so exists in this tree, so "some .so is
           // present" is a weak claim. The staged bytes are therefore matched
           // against the requested variant's source. Today one `source` URI
           // feeds both the copy and the dependency list, so this cannot
@@ -66,7 +67,7 @@ void main() {
             );
 
             final unstableSource = File(
-              '${Directory.current.path}/native/linux/x86_64/unstable/$name',
+              '${Directory.current.path}/native/linux/$hostNativeArch/unstable/$name',
             );
             expect(
               unstableSource.existsSync(),
@@ -97,7 +98,7 @@ void main() {
               deps.any(
                 (d) => d
                     .replaceAll(r'\', '/')
-                    .endsWith('native/linux/x86_64/unstable/$name'),
+                    .endsWith('native/linux/$hostNativeArch/unstable/$name'),
               ),
               isTrue,
               reason: 'source $name (unstable variant) should be a dependency',
