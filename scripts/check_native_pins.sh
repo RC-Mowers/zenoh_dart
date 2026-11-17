@@ -51,8 +51,31 @@ CARGO_HOME_DIR="${CARGO_HOME:-$HOME/.cargo}"
 # Patterns every library must NOT contain. The literal `/home/` is the stated
 # acceptance; the rest are this machine's real prefixes, which is the half that
 # survives being run somewhere else.
+#
+# This machine's prefixes are matched as a DIRECTORY (with its trailing `/`)
+# that STARTS a path: at the start of a string, or after a byte that cannot
+# be part of a path component. A leaked path always begins with the prefix;
+# the two false failures this replaces had it in the MIDDLE of an innocent
+# path, both found building as root in a container:
+#   $HOME=/root  matched /cargo/registry/src/.../num-integer-0.1.46/src/roots.rs
+#   $ROOT=/src   matched /cargo/registry/src/.../rand-0.9.2/src/rngs/thread.rs
+# A path must also continue after the prefix: zenoh-c itself carries the bare
+# strings `/src/` and `/dst/`, which name nothing on the build machine.
+# The literal `/home/` (the stated acceptance) is still matched anywhere.
 forbidden_patterns() {
-  printf '%s\n' "/home/" "$HOME" "$CARGO_HOME_DIR" "$ROOT"
+  printf '%s\n' "/home/" "${HOME%/}/" "${CARGO_HOME_DIR%/}/" "${ROOT%/}/"
+}
+
+# Count the occurrences of one forbidden pattern in stdin.
+count_pattern() {
+  local pat="$1"
+  if [ "$pat" = "/home/" ]; then
+    grep -aoF -- "$pat" | wc -l
+  else
+    local esc
+    esc=$(printf '%s' "$pat" | sed 's/[][\.*^$+?(){}|]/\\&/g')
+    grep -aoE -- "(^|[^[:alnum:]._/+-])${esc}[[:alnum:]._-]" | wc -l
+  fi
 }
 
 fails=0
@@ -79,10 +102,10 @@ check_one() {
   local pat n2 n3 report="" worst=""
   while IFS= read -r pat; do
     [ -n "$pat" ] || continue
-    n2=$(grep -aoF "$pat" "$so" | wc -l)
+    n2=$(count_pattern "$pat" < "$so")
     n3=-1
     if command -v strings >/dev/null 2>&1; then
-      n3=$(strings -a "$so" | grep -cF "$pat")
+      n3=$(strings -a "$so" | count_pattern "$pat")
     fi
     if [ "$n2" -ne 0 ]; then
       report="${report}       ${n2} occurrence(s) of '${pat}'"$'\n'
@@ -122,7 +145,7 @@ selftest() {
   local d; d="$(mktemp -d)"
   trap 'rm -rf "$d"' RETURN
   printf 'harmless\n' > "$d/clean.so"
-  printf 'x%s/somewhere/file.rs\n' "$HOME" > "$d/dirty.so"
+  printf 'x %s/somewhere/file.rs\n' "$HOME" > "$d/dirty.so"
 
   echo "selftest: a file with no build path must pass"
   fails=0; check_one "$d/clean.so"
@@ -132,12 +155,38 @@ selftest() {
   fails=0; check_one "$d/dirty.so" >/dev/null
   [ "$fails" -eq 1 ] || { echo "SELFTEST FAILED: dirty file accepted"; return 1; }
 
+  # The case that was a false failure: a builder whose $HOME is /root, and a
+  # crate file whose path only starts with the same letters. Run with that
+  # HOME whatever the real one is, then put the real one back.
+  echo "selftest: with HOME=/root, a crate path ending in /roots.rs must pass"
+  printf 'x/cargo/registry/src/index/num-integer-0.1.46/src/roots.rs\n' > "$d/lookalike.so"
+  local real_home="$HOME"
+  HOME=/root
+  fails=0; check_one "$d/lookalike.so" >/dev/null
+  HOME="$real_home"
+  [ "$fails" -eq 0 ] || { echo "SELFTEST FAILED: look-alike path rejected"; return 1; }
+
+  # And the repository mounted at /src: a crate's own src/ directory is not
+  # a leak, but a path that starts with the repository root is.
+  echo "selftest: with the repo at /src, a crate's src/ and a bare /src/ must pass, /src/<path> must fail"
+  printf 'x/cargo/registry/src/index/rand-0.9.2/src/rngs/thread.rs\n/src/\n' > "$d/crate_src.so"
+  printf 'x /src/extern/zenoh-c/src/lib.rs\n' > "$d/root_leak.so"
+  local real_root="$ROOT"
+  ROOT=/src
+  fails=0; check_one "$d/crate_src.so" >/dev/null
+  local crate_fails=$fails
+  fails=0; check_one "$d/root_leak.so" >/dev/null
+  local leak_fails=$fails
+  ROOT="$real_root"
+  [ "$crate_fails" -eq 0 ] || { echo "SELFTEST FAILED: crate src/ path rejected"; return 1; }
+  [ "$leak_fails" -eq 1 ] || { echo "SELFTEST FAILED: repository-root leak accepted"; return 1; }
+
   echo "selftest: a core-named file without the pinned string must fail"
   printf 'harmless\n' > "$d/libzenohc.so"
   fails=0; check_one "$d/libzenohc.so" >/dev/null
   [ "$fails" -eq 1 ] || { echo "SELFTEST FAILED: wrong-core file accepted"; return 1; }
 
-  echo "selftest: PASSED -- the check can detect all three violations"
+  echo "selftest: PASSED -- the check detects all violations and passes the look-alike paths"
   fails=0
   return 0
 }
