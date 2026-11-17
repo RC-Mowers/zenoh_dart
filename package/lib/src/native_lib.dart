@@ -60,6 +60,18 @@ DynamicLibrary get nativeLibrary {
   return _library;
 }
 
+/// The `native/linux/<arch>/` directory of the running host, named as
+/// `uname -m` and the CMake install rule name it. Only the
+/// `ZENOH_DART_VARIANT` dev override uses it.
+String _hostLinuxArchDir() => switch (Abi.current()) {
+  Abi.linuxX64 => 'x86_64',
+  Abi.linuxArm64 => 'aarch64',
+  final abi => throw UnsupportedError(
+    'ZENOH_DART_VARIANT names a Linux native directory; no directory is '
+    'defined for $abi.',
+  ),
+};
+
 /// Resolves the absolute path to a prebuilt native library.
 ///
 /// Probe order (INVERTED from the pre-variant loader, and sound only on Dart
@@ -125,10 +137,15 @@ String? _resolveLibraryPath(String libraryName) {
   final packageRoot = packageUri?.resolve('../../');
   final probed = <String>[];
 
-  // 1. Explicit dev override → the variant subdir.
+  // 1. Explicit dev override → the variant subdir of the HOST's architecture.
+  // This tier used to name `native/linux/x86_64/` literally, so on an arm64
+  // host the override could never resolve and every variant-forced run failed.
+  final archDir = hasOverride ? _hostLinuxArchDir() : null;
   if (packageRoot != null && hasOverride) {
     final overrideFile = File.fromUri(
-      packageRoot.resolve('native/linux/x86_64/$variantOverride/$libraryName'),
+      packageRoot.resolve(
+        'native/linux/$archDir/$variantOverride/$libraryName',
+      ),
     );
     if (overrideFile.existsSync()) return overrideFile.path;
     probed.add(overrideFile.path);
@@ -137,7 +154,7 @@ String? _resolveLibraryPath(String libraryName) {
   // Same override probe relative to the current working directory.
   if (hasOverride) {
     final cwdOverride = File(
-      'native/linux/x86_64/$variantOverride/$libraryName',
+      'native/linux/$archDir/$variantOverride/$libraryName',
     );
     if (cwdOverride.existsSync()) return cwdOverride.absolute.path;
     probed.add(cwdOverride.absolute.path);
