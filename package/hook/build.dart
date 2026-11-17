@@ -76,12 +76,20 @@ Uri _nativeDir(Uri packageRoot, CodeConfig config, String variant) {
     return packageRoot.resolve('native/android/$abi/$variant/');
   }
   if (os == OS.linux) {
-    // x64 → x86_64 to match uname convention
-    final dirName = arch == Architecture.x64 ? 'x86_64' : arch.toString();
-    return packageRoot.resolve('native/linux/$dirName/$variant/');
+    return packageRoot.resolve('native/linux/${_linuxArchDir(arch)}/$variant/');
   }
   throw UnsupportedError('Unsupported target OS: $os');
 }
+
+/// The Linux native directory for [arch]: `uname -m`, which is also the
+/// `CMAKE_SYSTEM_PROCESSOR` the CMake install rule writes to. `arm64` used to
+/// fall through to `arch.toString()` and look in `native/linux/arm64/`, a
+/// directory no build ever creates (the install writes `aarch64/`).
+String _linuxArchDir(Architecture arch) => switch (arch) {
+  Architecture.x64 => 'x86_64',
+  Architecture.arm64 => 'aarch64',
+  _ => throw UnsupportedError('Unsupported Linux architecture: $arch'),
+};
 
 String _androidAbi(Architecture arch) => switch (arch) {
   Architecture.arm64 => 'arm64-v8a',
