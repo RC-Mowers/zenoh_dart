@@ -5,7 +5,6 @@ import 'package:hooks/hooks.dart';
 import 'package:test/test.dart';
 
 import '../hook/build.dart' as hook;
-import 'helpers/host_paths.dart';
 
 /// Whether two files hold byte-identical content.
 ///
@@ -25,7 +24,7 @@ bool _sameContent(File a, File b) {
 /// declaration), driven in isolation via `testBuildHook`.
 ///
 /// Passes `variant: unstable` explicitly, so it reads the on-disk
-/// `native/linux/<arch>/unstable/` prebuilts regardless of the pubspec's own
+/// `native/linux/x86_64/unstable/` prebuilts regardless of the pubspec's own
 /// variant — i.e. it is correct under both halves of the 2x matrix.
 void main() {
   test(
@@ -35,6 +34,8 @@ void main() {
         mainMethod: hook.main,
         extensions: [
           CodeAssetExtension(
+            // The TARGET is x64 on any host, so the expected sources below are
+            // the x86_64 prebuilts, not the host's architecture.
             targetArchitecture: Architecture.x64,
             targetOS: OS.linux,
             linkModePreference: LinkModePreference.dynamic,
@@ -67,7 +68,7 @@ void main() {
             );
 
             final unstableSource = File(
-              '${Directory.current.path}/native/linux/$hostNativeArch/unstable/$name',
+              '${Directory.current.path}/native/linux/x86_64/unstable/$name',
             );
             expect(
               unstableSource.existsSync(),
@@ -98,7 +99,7 @@ void main() {
               deps.any(
                 (d) => d
                     .replaceAll(r'\', '/')
-                    .endsWith('native/linux/$hostNativeArch/unstable/$name'),
+                    .endsWith('native/linux/x86_64/unstable/$name'),
               ),
               isTrue,
               reason: 'source $name (unstable variant) should be a dependency',

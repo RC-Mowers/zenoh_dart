@@ -49,6 +49,7 @@ import 'package:zenoh_dart/src/finalizers.dart';
 import 'package:zenoh_dart/zenoh_unstable.dart';
 
 import 'helpers/bounded_subprocess.dart';
+import 'helpers/host_paths.dart';
 
 const _finHarness = 'test/helpers/finalizer_harness.dart';
 const _hookHarness = 'test/helpers/post_hook_harness.dart';
@@ -2040,7 +2041,9 @@ void main() {
       // makes a mis-stage loud from now on.
       variant = ZenohFeatures.hasUnstableApi ? 'unstable' : 'stable';
       stage = await Directory.systemTemp.createTemp('zd_stale');
-      final pkg = Directory('${stage.path}/pkg/native/linux/x86_64/$variant');
+      final pkg = Directory(
+        '${stage.path}/pkg/native/linux/$hostNativeArch/$variant',
+      );
       await pkg.create(recursive: true);
       await Link('${stage.path}/pkg/lib').create(
         Directory('lib').absolute.path,
@@ -2055,7 +2058,7 @@ void main() {
       // then no longer matches, which is precisely "this symbol is not
       // resolvable", i.e. the stale-native condition.
       final src = File(
-        'native/linux/x86_64/$variant/libzenoh_dart.so',
+        'native/linux/$hostNativeArch/$variant/libzenoh_dart.so',
       ).readAsBytesSync();
       final needle = 'zd_fin_free_block '.codeUnits;
       final replacement = 'zd_fin_free_blocX '.codeUnits;
@@ -2075,7 +2078,7 @@ void main() {
       }
       File('${pkg.path}/libzenoh_dart.so').writeAsBytesSync(bytes);
       File(
-        'native/linux/x86_64/$variant/libzenohc.so',
+        'native/linux/$hostNativeArch/$variant/libzenohc.so',
       ).copySync('${pkg.path}/libzenohc.so');
       File('${stage.path}/harness.dart')
           .writeAsStringSync(File(_finHarness).readAsStringSync());
@@ -2168,7 +2171,7 @@ void main() {
       expect(
         File(loaded!).resolveSymbolicLinksSync(),
         File(
-          '${stage.path}/pkg/native/linux/x86_64/$variant/libzenoh_dart.so',
+          '${stage.path}/pkg/native/linux/$hostNativeArch/$variant/libzenoh_dart.so',
         ).resolveSymbolicLinksSync(),
         reason: 'the child did not load the doctored native. Output:\n$out',
       );
